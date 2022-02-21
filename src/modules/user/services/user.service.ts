@@ -25,7 +25,7 @@ export class UserService {
     }
 
     async signin(user: Omit<User, 'fullname'>): Promise<any> {
-        const foundUser = await this.getOne({ email: user.email });
+        const foundUser = await this.getOne(user.email);
         if (foundUser) {
             const { password } = foundUser;
             if (bcrypt.compare(user.password, password)) {

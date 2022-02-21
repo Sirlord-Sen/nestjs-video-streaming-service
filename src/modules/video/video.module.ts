@@ -1,4 +1,4 @@
-import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { Module, Global} from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose'
 import { VideoController } from './controllers/video.controller';
 import { VideoService } from './services/video.service';
@@ -8,19 +8,19 @@ import { Video, VideoSchema } from "./model/video.schema"
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
-import { isAuthenticated } from '@middlewares/auth.middleware';
+import { UserModule } from '@user/user.module';
 
-
+@Global()
 @Module({
   imports: [
-    
+    UserModule,
     MongooseModule.forFeature([{ name: Video.name, schema: VideoSchema }]),
     ServeStaticModule.forRoot({
         rootPath: join(__dirname, '..', 'public'),
       }),
     MulterModule.register({
       storage: diskStorage({
-        destination: './public',
+        destination: 'public',
         filename: (req, file, cb) => {
           const ext = file.mimetype.split('/')[1];
           cb(null, `${uuidv4()}-${Date.now()}.${ext}`);
@@ -31,13 +31,4 @@ import { isAuthenticated } from '@middlewares/auth.middleware';
   controllers: [VideoController],
   providers: [VideoService],
 })
-export class VideoModule {
-  configure(consumer: MiddlewareConsumer){
-    consumer
-      .apply(isAuthenticated)
-      .exclude({
-        path: 'api/v1/video/:id', 
-        method: RequestMethod.GET
-      })
-  }
-}
+export class VideoModule{}

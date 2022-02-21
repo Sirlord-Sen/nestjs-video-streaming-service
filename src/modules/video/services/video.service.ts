@@ -1,4 +1,5 @@
 import {
+  Delete,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
@@ -9,6 +10,8 @@ import { Video, VideoDocument } from "../model/video.schema";
 import { createReadStream, statSync } from 'fs';
 import { join } from 'path';
 import { Request, Response } from 'express';
+import { User } from "@user/model/user.schema";
+import { pick } from 'lodash'
 
 @Injectable()
 export class VideoService {
@@ -16,9 +19,12 @@ export class VideoService {
       
     }
 
-    async createVideo(video: Object): Promise<Video> {
-      const newVideo = new this.videoModel(video);
-      return newVideo.save();
+    async createVideo(data: Object): Promise<{video : Omit<Video, 'createdBy' | 'uploadDate'>, user: Partial<User>}> {
+      const newVideo = new this.videoModel(data);
+      const savedVideo = await newVideo.save()
+      const user = pick(savedVideo.createdBy, ['_id'])
+      const video = pick(savedVideo, ['_id', 'title', 'coverImage', 'video'])
+      return {video, user};
     }
 
   async readVideo(id): Promise<any> {
@@ -30,6 +36,7 @@ export class VideoService {
 
   async streamVideo(id: string, response: Response, request: Request) {
     try {
+      console.log('lkjhgfdsdfghjmklkjhgfd')
         const data = await this.videoModel.findOne({ _id: id })
         if (!data) {
             throw new NotFoundException(null, 'VideoNotFound')
@@ -50,7 +57,7 @@ export class VideoService {
                 'Content-Type': 'video/mp4',
             })
             const vidoeStream = createReadStream(join(process.cwd(), `./public/${video}`), { start, end });
-            vidoeStream.pipe(response);
+            vidoeStream.pipe(response)
         } else {
             throw new NotFoundException(null, 'range not found')
         }

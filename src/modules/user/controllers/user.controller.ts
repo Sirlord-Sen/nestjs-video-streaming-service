@@ -5,12 +5,14 @@ import { UserService } from '../services/user.service'
 @Controller('/api/v1/user')
 export class UserController {
     constructor(private readonly userServerice: UserService
-    ) { }
+    ) { }  
+
     @Post('/signup')
     async Signup(@Res() response, @Body() user: User) {
-        const newUSer = await this.userServerice.signup(user)
+        const data = await this.userServerice.signup(user)
         return response.status(HttpStatus.CREATED).json({
-            newUSer
+            message: "success",
+            data
         })
     }
     @Post('/signin')
@@ -18,7 +20,7 @@ export class UserController {
         const data = await this.userServerice.signin(user);
         return response.status(HttpStatus.OK).json({
             message: 'success',
-            data: data
+            data
         })
     }
 }

@@ -10,7 +10,6 @@ export class isAuthenticated implements NestMiddleware {
     constructor(private readonly jwt: JwtService, private readonly userService: UserService) { }
     async use(req: UserRequest, res: Response, next: NextFunction) {
         try{
-
             if (
                 req.headers.authorization &&
                 req.headers.authorization.startsWith('Bearer')
